@@ -59,6 +59,13 @@ export interface HttpTransportOptions {
   timeoutMs?: number;
   /** Custom fetch (defaults to globalThis.fetch). */
   fetch?: typeof fetch;
+  /**
+   * "get" (default for short requests, works with every BTT version), "post" (JSON body,
+   * BTT ≥ 6.735), or "auto" (default): POST only when the GET url would exceed ~6 KB.
+   */
+  method?: "get" | "post" | "auto";
+  /** Send the shared secret as `X-BTT-Shared-Secret` header instead of a query parameter (BTT ≥ 6.735). */
+  secretInHeader?: boolean;
 }
 
 /** Configuration for the unix socket transport (Node only). */

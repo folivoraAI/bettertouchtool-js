@@ -30,6 +30,19 @@ import {
 } from "./types.js";
 import { Variables } from "./variables.js";
 
+export interface BttInfo {
+  app: string;
+  version: string;
+  build: string;
+  bundleIdentifier?: string;
+  macOS?: string;
+  routes: string[];
+  http?: { post?: boolean; jsonBody?: boolean; secretHeader?: string };
+  socketPath?: string;
+  socketServerEnabled?: boolean;
+  [k: string]: unknown;
+}
+
 export interface BttOptions {
   /** Explicit transport instance. Takes precedence over everything else. */
   transport?: Transport;
@@ -124,6 +137,19 @@ export class Btt {
   /** Like call() but parses JSON replies. */
   async callJson<T = unknown>(command: string, params: CommandParams = {}): Promise<T> {
     return parseJson<T>(await this.call(command, params), command);
+  }
+
+  /**
+   * Version & capability info (`get_info`, BTT ≥ 6.735). Returns null on older versions.
+   */
+  async info(): Promise<BttInfo | null> {
+    try {
+      const raw = await this.call("get_info");
+      const parsed = parseMaybeJson(raw);
+      return parsed && typeof parsed === "object" ? (parsed as BttInfo) : null;
+    } catch {
+      return null;
+    }
   }
 
   // ------------------------------------------------------------------ triggers & actions

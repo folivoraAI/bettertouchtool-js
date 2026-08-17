@@ -131,6 +131,21 @@ Turn it into an event stream: `{"type":"triggerFired","uuid":…,"name":…}`, `
 (`{"id":1,"command":"trigger_named","params":{…}}` → `{"id":1,"result":…}`). This is what made
 `Worie/btt` need a separate `btt-node-server`; BTT can do it natively.
 
+### B10. `get_triggers` / `delete_triggers`: `trigger_id` string vs number   ✅ done
+Over http/socket `trigger_id` arrives as a string; the fetch predicate compares it with the integer
+`gestureType`. SQLite coerces, in-memory evaluation of *pending* objects does not → triggers created via
+`add_new_trigger` were invisible to `get_triggers({trigger_id})` until BTT saved. Now normalized to NSNumber.
+
+### B11. `add_new_trigger` ignores a provided `BTTUUID`
+The importer always assigns a fresh UUID (so the same JSON can be imported twice) and returns it. Fine, but
+undocumented; the client uses the returned UUID and offers `upsertTrigger(uuid)` (= `update_trigger`) when a
+stable UUID is needed. Consider honouring `BTTUUID` when no trigger with that UUID exists.
+
+### B12. Keyboard-shortcut triggers could accept human-readable shortcuts
+`BTTShortcutToSend` (send-shortcut action) accepts `"cmd+shift+s"`, but keyboard shortcut *triggers* still
+need `BTTShortcutKeyCode` + `BTTShortcutModifierKeys`. Accepting e.g. `"BTTShortcut": "cmd+shift+s"` in the
+importer would remove the need for a key-code table in every client (the npm package ships one for now).
+
 ### B7. Unix socket server: wrong defaults key
 `BTTUnixSocketServer.m:147` checks `BTTSocketServer` but the setting is `BTTSocketServerEnabled` —
 the guard is dead (harmless today because the server is only started when enabled, but should be fixed).
@@ -147,10 +162,23 @@ params from the same catalog the npm package uses (single source of truth), and 
 
 ---
 
-## Implementation order
-1. A1 scaffold + A2 transports + A3 low-level API + tests               ← this session
-2. A4/A5 generators + catalogs + builders + chain                          ← this session
-3. A7 CLI, README, examples                                                ← this session
-4. B1, B2, B4, B5, B7 in BTT (small, safe, all in the HTTP/socket layer)   ← next
-5. B3 POST support, B8 import_script                                        ← next
-6. B6 WebSocket events + A9 client side                                    ← later
+## Status (2026-08-17)
+| Item | Status |
+|---|---|
+| A1 toolchain, A2 transports (http/socket/in-process/auto), A3 typed API, A4 action catalog + builders, A5 trigger catalog + builders + handles, A6 chain, A7 CLI, A8 README/examples | ✅ done, 21 unit tests + 4 live tests (socket) green |
+| B1 generic route dispatch (shared `+externalScriptingRoutes`) | ✅ done (`BTTHTTPConnection.m`, `BTTUnixSocketServer.m`) |
+| B2 exact secret check + `X-BTT-Shared-Secret` / `Authorization: Bearer` (legacy path-contains kept for compat) | ✅ done |
+| B3 POST bodies (JSON / form) | ✅ done – client uses POST automatically for >6 KB requests (`method: "auto"`) |
+| B4 `/get_info/` (also on socket + in-process) | ✅ done – `btt.info()` |
+| B5 JSON content type, 403/400 JSON errors, shared result coercion | ✅ done (unknown routes → static file server / 404 as before) |
+| B7 socket server defaults key | ✅ done |
+| B10 trigger_id coercion | ✅ done |
+| B9 docs (`webserver.mdx`) | ✅ updated |
+| B6 WebSocket event stream + A9 client events | ⏳ next |
+| B8 `import_script()` in the JS runner | ⏳ next |
+| B11 / B12 | ⏳ optional |
+
+BTT-side changes compile (Debug build OK) but the HTTP path was **not** exercised against a running BTT yet
+(webserver is disabled on this machine, socket path is verified live). To verify: enable the webserver, then
+`BTT_LIVE=1 BTT_URL=http://127.0.0.1:PORT npm run test:live` and
+`curl -X POST http://127.0.0.1:PORT/get_info/ -H 'Content-Type: application/json' -d '{}'`.

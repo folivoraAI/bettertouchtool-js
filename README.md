@@ -53,6 +53,8 @@ new Btt({ http: { port: 64472 }, sharedSecret: "s" });   // auto: in-process →
 new Btt({ transport: myTransport });            // anything implementing Transport
 ```
 
+`await btt.info()` returns BTT's version and the list of available functions (BTT ≥ 6.735, `null` before).
+
 Every method throws `BttError` with a readable message when BTT can't be reached, the shared secret is
 wrong, or BTT answers with an in-band error (`command not found …`).
 

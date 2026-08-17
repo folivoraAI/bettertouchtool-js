@@ -30,9 +30,27 @@ describe("HttpTransport", () => {
     }) as any;
     const t = new HttpTransport({ url: "http://localhost:9/", fetch: fetchImpl });
     expect(await t.call("trigger_named", { trigger_name: "a b" })).toBe("hello");
-    expect(seen[0]).toBe("http://localhost:9/trigger_named/?trigger_name=a+b");
+    expect(seen[0]).toBe("http://localhost:9/trigger_named/?trigger_name=a%20b");
     const t403 = new HttpTransport({ url: "http://x", fetch: (async () => new Response("", { status: 403 })) as any });
     await expect(t403.call("x")).rejects.toThrow(/shared secret/);
+  });
+});
+
+describe("HttpTransport POST", () => {
+  it("switches to POST for large payloads and can send the secret as header", () => {
+    const t = new HttpTransport({ port: 1, sharedSecret: "s", secretInHeader: true, fetch: (async () => new Response("")) as any });
+    const small = t.buildRequest("trigger_named", { trigger_name: "x" });
+    expect(small.init.method).toBe("GET");
+    expect((small.init.headers as Record<string, string>)["X-BTT-Shared-Secret"]).toBe("s");
+    expect(small.url).not.toContain("shared_secret");
+    const big = t.buildRequest("add_new_trigger", { json: { BTTNotes: "x".repeat(7000) } });
+    expect(big.init.method).toBe("POST");
+    expect(big.url).toBe("http://127.0.0.1:1/add_new_trigger/");
+    expect(JSON.parse(big.init.body as string).json.BTTNotes.length).toBe(7000);
+    const forced = new HttpTransport({ port: 1, sharedSecret: "s", method: "post", fetch: (async () => new Response("")) as any });
+    const req = forced.buildRequest("get_string_variable", { variable_name: "v" });
+    expect(req.init.method).toBe("POST");
+    expect(JSON.parse(req.init.body as string)).toEqual({ variable_name: "v", shared_secret: "s" });
   });
 });
 
@@ -40,7 +58,7 @@ describe("UnixSocketTransport", () => {
   it("builds request lines", () => {
     const t = new UnixSocketTransport({ sharedSecret: "k" });
     expect(t.buildRequestLine("get_string_variable", { variable_name: "x y" })).toBe(
-      "/get_string_variable/?variable_name=x+y&shared_secret=k\n",
+      "/get_string_variable/?variable_name=x%20y&shared_secret=k\n",
     );
   });
 });

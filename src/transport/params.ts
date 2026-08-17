@@ -18,8 +18,13 @@ export function normalizeParams(params: CommandParams | undefined): Record<strin
   return out;
 }
 
+/**
+ * Percent-encodes with `encodeURIComponent` (space → %20, "+" → %2B) instead of URLSearchParams
+ * ("+" for spaces): BTT's webserver keeps a literal "+" as "+", its socket server turns "+" into a
+ * space – %20 / %2B are unambiguous for both.
+ */
 export function toQueryString(params: Record<string, string>): string {
-  const usp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) usp.append(k, v);
-  return usp.toString();
+  return Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join("&");
 }

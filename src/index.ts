@@ -1,4 +1,4 @@
-export { Btt, type BttOptions, generateUuid, sequenceToJson } from "./client.js";
+export { Btt, type BttInfo, type BttOptions, generateUuid, sequenceToJson } from "./client.js";
 export { Chain } from "./chain.js";
 export { Variables } from "./variables.js";
 export * from "./types.js";
