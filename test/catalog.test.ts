@@ -29,9 +29,13 @@ describe("catalogs", () => {
     });
     expect(kb.BTTActionsToExecute).toHaveLength(1);
     expect(actions.runShellScript("echo hi").BTTShellTaskActionConfig).toBe("/bin/bash:::-c:::-:::");
-    expect(actions.runJavaScript("async function main() { return 1 }").BTTAdditionalActionData).toMatchObject({
-      BTTScriptFunctionToCall: "main",
-    });
-    expect(actions.runJavaScript("returnToBTT(1)").BTTAdditionalActionData).not.toHaveProperty("BTTScriptFunctionToCall");
+    expect(actions.runJavaScript("async function main() { return 1 }").BTTAdditionalActionData).toMatchObject(
+      {
+        BTTScriptFunctionToCall: "main",
+      },
+    );
+    expect(actions.runJavaScript("returnToBTT(1)").BTTAdditionalActionData).not.toHaveProperty(
+      "BTTScriptFunctionToCall",
+    );
   });
 });

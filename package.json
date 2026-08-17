@@ -49,7 +49,8 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "generate": "node --import tsx scripts/generate-catalogs.ts",
-    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "check": "npm run lint && npm run typecheck && npm test"
   },
   "keywords": [
     "bettertouchtool",

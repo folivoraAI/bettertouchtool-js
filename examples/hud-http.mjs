@@ -7,5 +7,10 @@ const btt = Btt.http({
   sharedSecret: process.env.BTT_SECRET,
 });
 await btt.triggerAction(
-  actions.showHUD("Hello over HTTP", { detail: "sent by Node.js", duration: 2, background: "#1E88E5CC", position: 1 }),
+  actions.showHUD("Hello over HTTP", {
+    detail: "sent by Node.js",
+    duration: 2,
+    background: "#1E88E5CC",
+    position: 1,
+  }),
 );
