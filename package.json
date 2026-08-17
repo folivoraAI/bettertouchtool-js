@@ -1,0 +1,76 @@
+{
+  "name": "bettertouchtool",
+  "version": "1.0.0-alpha.1",
+  "description": "Typed JavaScript/TypeScript client for BetterTouchTool's scripting API (webserver, unix socket, or in-process). Successor to the unmaintained `btt` package.",
+  "license": "MIT",
+  "author": "folivora.AI GmbH",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "browser": "./dist/browser.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/browser.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "import": "./dist/catalog.js",
+      "require": "./dist/catalog.cjs"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js",
+      "require": "./dist/browser.cjs"
+    }
+  },
+  "bin": {
+    "btt": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:live": "BTT_LIVE=1 vitest run test/live",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "generate": "node --import tsx scripts/generate-catalogs.ts",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "keywords": [
+    "bettertouchtool",
+    "btt",
+    "macos",
+    "automation",
+    "touchbar",
+    "streamdeck",
+    "floating-menu",
+    "shortcuts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/folivora-ai/bettertouchtool-js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^20.19.43",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}
