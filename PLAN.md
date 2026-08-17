@@ -194,7 +194,5 @@ params from the same catalog the npm package uses (single source of truth), and 
 | B8 `import_script()` in the JS runner | ⏳ next |
 | B11 / B12 | ⏳ optional |
 
-BTT-side changes compile (Debug build OK) but the HTTP path was **not** exercised against a running BTT yet
-(webserver is disabled on this machine, socket path is verified live). To verify: enable the webserver, then
-`BTT_LIVE=1 BTT_URL=http://127.0.0.1:PORT npm run test:live` and
-`curl -X POST http://127.0.0.1:PORT/get_info/ -H 'Content-Type: application/json' -d '{}'`.
+All BTT-side changes verified live against build 6.735 (2026081704) on 2026-08-17: socket, HTTP GET, HTTP POST
+(JSON body), `get_info`, Real-JS replies (~30 ms instead of 5 s timeouts), stale-function fix, shell task.

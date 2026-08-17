@@ -43,8 +43,8 @@ await handle.delete();
 
 | Environment | Transport | Setup in BTT |
 |---|---|---|
-| Node on the same Mac | `UnixSocketTransport` (default when the socket exists) | Settings → Scripting → **Enable Socket Server** (+ optional shared secret) |
-| Node / browser / other devices | `HttpTransport` | Settings → Scripting → **Webserver** (port, shared secret, interface) |
+| Node on the same Mac | `UnixSocketTransport` (default when the socket exists) | Settings → Scripting BTT → Command Line → **Enable Socket Server** (+ optional shared secret) |
+| Node / browser / other devices | `HttpTransport` | Settings → Scripting BTT → **Webserver** (enable, port, shared secret, interface) |
 | Inside BTT (Run Real JavaScript, WebView, floating HTML menu, script widgets) | `InProcessTransport` (auto) | nothing – uses BTT's `callBTT()` |
 
 ```ts
@@ -60,6 +60,194 @@ new Btt({ transport: myTransport });            // anything implementing Transpo
 
 Every method throws `BttError` with a readable message when BTT can't be reached, the shared secret is
 wrong, or BTT answers with an in-band error (`command not found …`).
+
+## Examples
+
+All examples are plain Node ≥ 18 ESM scripts (`node example.mjs`). Copy-paste and run.
+
+### Show a HUD via the unix socket
+
+Enable BTT → Settings → Scripting BTT → Command Line → "Enable Socket Server" (a BTT relaunch may be needed).
+
+```js
+// hud-socket.mjs
+import { Btt, actions } from "bettertouchtool";
+
+const btt = Btt.socket(); // /tmp/com.hegenberg.BetterTouchTool.sock
+// with a scripting shared secret configured in BTT:  Btt.socket({ sharedSecret: "…" })
+
+await btt.triggerAction(
+  actions.showHUD("Hello from the socket 👋", { detail: "sent by Node.js", duration: 2 }),
+);
+```
+
+### Show a HUD via the webserver (HTTP)
+
+Enable BTT → Settings → Scripting BTT → Webserver, note the port (and set a shared secret if you expose it
+to your network).
+
+```js
+// hud-http.mjs
+import { Btt, actions } from "bettertouchtool";
+
+const btt = Btt.http({ port: 64472, sharedSecret: "my-secret" });
+// other machine:  Btt.http({ url: "http://192.168.1.10:64472", sharedSecret: "my-secret" })
+// BTT ≥ 6.735:    Btt.http({ port: 64472, sharedSecret: "my-secret", secretInHeader: true })  // secret in a header, not the URL
+
+await btt.triggerAction(
+  actions.showHUD("Hello over HTTP", {
+    detail: "sent by Node.js",
+    duration: 2,
+    background: "#1E88E5CC",
+    position: 1, // top center
+  }),
+);
+```
+
+The same call as a raw request (what the library sends):
+
+```bash
+curl "http://127.0.0.1:64472/trigger_action/?shared_secret=my-secret&json=%7B%22BTTPredefinedActionType%22%3A254%2C%22BTTAdditionalActionData%22%3A%7B%22BTTActionHUDTitle%22%3A%22Hello%22%2C%22BTTActionHUDDuration%22%3A2%7D%7D"
+# BTT ≥ 6.735 also accepts POST with a JSON body:
+curl -X POST http://127.0.0.1:64472/trigger_action/ -H 'X-BTT-Shared-Secret: my-secret' \
+     -H 'Content-Type: application/json' \
+     -d '{"json":{"BTTPredefinedActionType":254,"BTTAdditionalActionData":{"BTTActionHUDTitle":"Hello","BTTActionHUDDuration":2}}}'
+```
+
+### Read and write variables
+
+```js
+import { Btt } from "bettertouchtool";
+const btt = new Btt({ http: { port: 64472 } }); // auto: socket if available, else http
+
+console.log(await btt.getStringVariable("BTTActiveAppBundleIdentifier")); // "com.apple.Safari"
+console.log(await btt.getNumberVariable("OutputVolume"));                  // 0.4375
+console.log(await btt.getStringVariable("selected_text"));                 // current text selection
+
+await btt.setNumberVariable("my_counter", 1);
+await btt.vars.set("my_mode", "dark", { persistent: true });               // type inferred, survives restarts
+console.log(await btt.vars.get("my_mode"));                                 // "dark"
+
+// poll a variable and react to changes (until BTT streams events)
+const stop = btt.vars.watch("BTTActiveAppBundleIdentifier", (app) => console.log("now active:", app), 500);
+setTimeout(stop, 60_000);
+```
+
+### Run a named trigger and get its result
+
+Create a named trigger in BTT (Automations, Named & Other Triggers → Named Trigger) whose action is e.g.
+"Run AppleScript (blocking)" with `return "hello"`; then:
+
+```js
+const result = await btt.triggerNamed("My Named Trigger");            // waits for the reply
+await btt.triggerNamedAsync("Fire And Forget", { delaySeconds: 10 });   // cancelable:
+await btt.cancelDelayedNamedTrigger("Fire And Forget");
+```
+
+### Create, run and delete triggers from code
+
+```js
+import { Btt, actions, triggers } from "bettertouchtool";
+const btt = Btt.socket();
+
+// global keyboard shortcut ⌘⇧K → HUD + open URL
+const shortcut = await btt.addNewTrigger(
+  triggers.keyboardShortcut("cmd+shift+k", [actions.showHUD("⌘⇧K"), actions.openURL("https://folivora.ai")], {
+    description: "created from Node",
+  }),
+);
+
+// named trigger that runs a shell script and returns its output
+const named = await btt.addNewTrigger(
+  triggers.namedTrigger("uptime", [actions.runShellScript("uptime")]),
+);
+console.log(await btt.triggerNamed("uptime")); // "22:41  up 3 days, …"
+
+// named trigger running Real JavaScript – the function's return value is the result
+await btt.addNewTrigger(
+  triggers.namedTrigger("front-window", [
+    actions.runJavaScript(`async function main() {
+      const app = await get_string_variable({ variable_name: "BTTActiveAppBundleIdentifier" });
+      return "front app: " + app;
+    }`),
+  ]),
+);
+console.log(await btt.triggerNamed("front-window"));
+
+// inspect / clean up
+console.log((await btt.getTriggers({ triggerType: "BTTTriggerTypeKeyboardShortcut" })).length, "shortcuts");
+await shortcut.disable();
+await shortcut.delete();
+await named.delete();
+```
+
+### Sequences: several actions in one round trip
+
+```js
+await btt.chain()
+  .launchApp("com.apple.Safari")
+  .delay(0.5)
+  .sendShortcut("cmd+t")
+  .pasteText("https://folivora.ai")
+  .sendShortcut("return")
+  .showHUD("Done", { duration: 1 })
+  .run();
+```
+
+### Clipboard, selection, typing
+
+```js
+const clip = await btt.getClipboardContent();
+const html = await btt.getClipboardContent({ format: "NSPasteboardTypeHTML" });
+const selection = await btt.getSelection();
+await btt.setClipboardContent("plain text");
+await btt.setClipboardContents([
+  { content: "hello", format: "NSPasteboardTypeString" },
+  { content: "<b>hello</b>", format: "NSPasteboardTypeHTML" },
+]);
+await btt.pasteText("typed into the frontmost app", { insertByPasting: false });
+const recent = await btt.getItemsFromClipboardManager({ start: 0, numberOfItems: 5 });
+```
+
+### Floating menus, widgets, notifications
+
+```js
+await btt.updateMenuItem({ menuName: "Quick Actions", itemName: "Status" }, {
+  BTTMenuItemText: "All systems go",
+  BTTMenuItemBackgroundColor: "20, 200, 20, 255",
+}, { persist: true });
+await btt.triggerAction(actions.showFloatingMenu("Quick Actions"));
+
+const item = btt.widget("PUT-MENUBAR-ITEM-UUID-HERE", "menubar");   // uuid: right-click the item in BTT
+setInterval(() => item.update({ text: new Date().toLocaleTimeString() }), 1000);
+
+await btt.displayNotification({ title: "Build finished", subTitle: "3 warnings", soundName: "Glass" });
+```
+
+### Anything else: raw calls and the action catalog
+
+```js
+// any scripting function, any parameters (see the BTT docs – names are identical)
+await btt.call("update_touch_bar_widget", { uuid: "…", json: { text: "hi", background_color: "200,100,100,255" } });
+const presets = await btt.callJson("get_preset_details", { name: "Default" });
+
+// build any of the ~400 predefined actions by id
+import { ActionType, actions } from "bettertouchtool";
+await btt.triggerAction(actions.action(ActionType.LOCK_SCREEN));
+await btt.triggerAction(actions.action(ActionType.MOVE_MOUSE_TO_POSITION, {
+  BTTAdditionalActionData: { BTTMouseMoveX: 100, BTTMouseMoveY: 100, BTTMouseMoveAnchor: 0 },
+}));
+
+// look up ids and documented parameters
+import { actionCatalog } from "bettertouchtool/catalog";
+console.log(actionCatalog.search("dark mode").map((a) => `${a.id} ${a.name}`));
+console.log(actionCatalog.byId(254)?.params);
+```
+
+### Inside BetterTouchTool (Run Real JavaScript / WebView)
+
+Bundle your script together with this package into one file and load it – the client detects `callBTT`
+and needs no configuration (see the section below).
 
 ## API overview
 
