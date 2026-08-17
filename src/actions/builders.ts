@@ -212,8 +212,18 @@ export function runAppleScript(script: string, o: ScriptOptions = {}): ActionJso
   });
 }
 
-/** Runs BTT's "Run Real JavaScript" (JavaScriptCore with async/await, callBTT etc). */
-export function runJavaScript(script: string, o: { path?: boolean } = {}): ActionJson {
+/**
+ * Runs BTT's "Run Real JavaScript" (JavaScriptCore with async/await, callBTT etc).
+ * If the script defines a function (`async function main() { … }`) BTT calls it and its return value
+ * becomes the action result (returned by `triggerNamed` / `triggerAction`). Pass `functionToCall` to
+ * pick one explicitly; it is auto-detected from the first `function name(` otherwise. Scripts without a
+ * function are just evaluated and must call `returnToBTT(value)` themselves.
+ */
+export function runJavaScript(
+  script: string,
+  o: { path?: boolean; functionToCall?: string; isolatedContext?: boolean } = {},
+): ActionJson {
+  const fn = o.functionToCall ?? script.match(/(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/)?.[1];
   return action(ActionType.RUN_CORE_JAVASCRIPT, {
     BTTAdditionalActionData: {
       BTTScriptType: 3,
@@ -221,6 +231,8 @@ export function runJavaScript(script: string, o: { path?: boolean } = {}): Actio
       BTTScriptLocation: 0,
       BTTAppleScriptRunInBackground: true,
       BTTAppleScriptString: script,
+      ...(fn ? { BTTScriptFunctionToCall: fn } : {}),
+      ...(o.isolatedContext !== undefined ? { BTTJavaScriptUseIsolatedContext: o.isolatedContext } : {}),
     },
   });
 }
@@ -238,11 +250,21 @@ export function runJXA(script: string, o: ScriptOptions = {}): ActionJson {
   });
 }
 
-/** Runs a shell script (Shell Script Task). `shell` defaults to /bin/bash. */
-export function runShellScript(script: string, o: { shell?: string } = {}): ActionJson {
+/**
+ * Runs a shell script (Shell Script Task). `shell` defaults to /bin/bash, `args` to "-c" (the script is
+ * appended as last argument). `env` = extra environment variables. The result is the script's stdout.
+ */
+export function runShellScript(
+  script: string,
+  o: { shell?: string; args?: string; env?: Record<string, string> } = {},
+): ActionJson {
+  const env = Object.entries(o.env ?? {})
+    .map(([k, v]) => `${k}=${v}`)
+    .join("\n");
   return action(ActionType.SHELL_SCRIPT_TASK, {
     BTTShellTaskActionScript: script,
-    BTTShellTaskActionConfig: o.shell ?? "/bin/bash",
+    // launchPath:::parameters:::-:::environmentVars (the ":::" format is required, else BTT ignores the action)
+    BTTShellTaskActionConfig: `${o.shell ?? "/bin/bash"}:::${o.args ?? "-c"}:::-:::${env}`,
   });
 }
 

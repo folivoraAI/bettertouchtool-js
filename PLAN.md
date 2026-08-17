@@ -146,10 +146,21 @@ stable UUID is needed. Consider honouring `BTTUUID` when no trigger with that UU
 need `BTTShortcutKeyCode` + `BTTShortcutModifierKeys`. Accepting e.g. `"BTTShortcut": "cmd+shift+s"` in the
 importer would remove the need for a key-code table in every client (the npm package ships one for now).
 
-### B13. `trigger_named` reply only for AppleScript / Terminal Command actions
-Verified live: a named trigger whose action is "Run AppleScript" (172) or "Terminal Command (Blocking)" (246)
-returns the script output over `trigger_named`; "Shell Script Task" (206) and "Run Real JavaScript" (281,
-`returnToBTT(...)`) return "". Those two paths apparently don't feed the named-trigger reply block.
+### B13. `trigger_named` / `trigger_action` replies lost for Run Real JavaScript   ✅ fixed (BTT + lib)
+Root causes found live:
+1. **Servers blocked main**: socket + HTTP called the handler synchronously → handlers `dispatch_sync` the
+   work to main and pump a nested run loop there. Replies that arrive *via the main queue* (JS runner
+   `replyOnMainQueue`) can never be drained inside a main-queue block → 5 s timeout, "" result.
+   Fix: `-[BTTGenericScriptHandler performExternalScriptCommand:withParameters:timeout:]` – async reply +
+   semaphore on the server thread, main stays free. Used by `BTTHTTPConnection` and `BTTUnixSocketServer`.
+2. **Global JS context function cache**: a cached `main()` from another trigger was executed instead of
+   the new script (same function name → stale code!) and its `returnToBTT<callingID>` pointed at an old
+   reply. Fix in `BTTJavaScriptCoreRunner`: script hash per function key → re-evaluate when the text
+   changed; re-bind the per-run reply functions for cached functions. Also fixed a nil `functionSuffix`
+   `stringByAppendingString:` crash path.
+3. **Docs were wrong**: `BTTShellTaskActionConfig` must be `launchPath:::params:::-:::env`
+   (`"/bin/bash:::-c:::-:::"`), a bare `"/bin/bash"` silently does nothing; Run Real JavaScript needs
+   `BTTScriptFunctionToCall` for a return value. Docs + builders (`runShellScript`, `runJavaScript`) fixed.
 
 ### B7. Unix socket server: wrong defaults key
 `BTTUnixSocketServer.m:147` checks `BTTSocketServer` but the setting is `BTTSocketServerEnabled` —
