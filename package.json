@@ -1,6 +1,6 @@
 {
   "name": "bettertouchtool",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Official, typed JavaScript/TypeScript client for BetterTouchTool's scripting API (webserver, unix socket, or in-process). AI generated & maintained by folivora.AI. Successor to the unmaintained `btt` package.",
   "license": "MIT",
   "author": "folivora.AI GmbH",
@@ -30,7 +30,11 @@
   "bin": {
     "btt": "./dist/cli.js"
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
   "engines": {
     "node": ">=18"
