@@ -11,5 +11,14 @@
       "performance": { "noDelete": "off" }
     }
   },
-  "files": { "ignore": ["dist", "node_modules", "src/**/*.generated.ts", "coverage", "package.json", "package-lock.json"] }
+  "files": {
+    "ignore": [
+      "dist",
+      "node_modules",
+      "src/**/*.generated.ts",
+      "coverage",
+      "package.json",
+      "package-lock.json"
+    ]
+  }
 }
