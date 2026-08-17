@@ -59,10 +59,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/folivora-ai/bettertouchtool-js.git"
+    "url": "git+https://github.com/folivoraAI/bettertouchtool-js.git"
   },
-  "homepage": "https://github.com/folivora-ai/bettertouchtool-js#readme",
-  "bugs": "https://github.com/folivora-ai/bettertouchtool-js/issues",
+  "homepage": "https://github.com/folivoraAI/bettertouchtool-js#readme",
+  "bugs": "https://github.com/folivoraAI/bettertouchtool-js/issues",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^20.19.43",

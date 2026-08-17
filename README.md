@@ -1,6 +1,6 @@
 # bettertouchtool
 
-[![CI](https://github.com/folivora-ai/bettertouchtool-js/actions/workflows/ci.yml/badge.svg)](https://github.com/folivora-ai/bettertouchtool-js/actions/workflows/ci.yml)
+[![CI](https://github.com/folivoraAI/bettertouchtool-js/actions/workflows/ci.yml/badge.svg)](https://github.com/folivoraAI/bettertouchtool-js/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/bettertouchtool.svg)](https://www.npmjs.com/package/bettertouchtool)
 
 Typed JavaScript/TypeScript client for [BetterTouchTool](https://folivora.ai)'s scripting API.
