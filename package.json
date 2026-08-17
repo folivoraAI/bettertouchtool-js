@@ -28,7 +28,7 @@
     }
   },
   "bin": {
-    "btt": "./dist/cli.js"
+    "btt": "dist/cli.js"
   },
   "files": [
     "dist",

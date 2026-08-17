@@ -48,4 +48,8 @@ jobs:
       - run: npm install -g npm@latest   # trusted publishing needs npm >= 11.5.1
       - run: npm ci
       - run: npm run build
-      - run: npm publish --provenance --access public
+      - name: Publish (prereleases get the "next" dist-tag, stable releases "latest")
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then TAG=next; else TAG=latest; fi
+          npm publish --provenance --access public --tag "$TAG"
