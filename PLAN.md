@@ -146,6 +146,11 @@ stable UUID is needed. Consider honouring `BTTUUID` when no trigger with that UU
 need `BTTShortcutKeyCode` + `BTTShortcutModifierKeys`. Accepting e.g. `"BTTShortcut": "cmd+shift+s"` in the
 importer would remove the need for a key-code table in every client (the npm package ships one for now).
 
+### B13. `trigger_named` reply only for AppleScript / Terminal Command actions
+Verified live: a named trigger whose action is "Run AppleScript" (172) or "Terminal Command (Blocking)" (246)
+returns the script output over `trigger_named`; "Shell Script Task" (206) and "Run Real JavaScript" (281,
+`returnToBTT(...)`) return "". Those two paths apparently don't feed the named-trigger reply block.
+
 ### B7. Unix socket server: wrong defaults key
 `BTTUnixSocketServer.m:147` checks `BTTSocketServer` but the setting is `BTTSocketServerEnabled` —
 the guard is dead (harmless today because the server is only started when enabled, but should be fixed).
