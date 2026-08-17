@@ -1,3 +1,5 @@
+import * as A from "./actions/builders.js";
+import { actionCatalog } from "./actions/catalog.js";
 /**
  * `btt` command line: talk to BetterTouchTool from the shell.
  *
@@ -13,11 +15,9 @@
  * or env BTT_URL / BTT_PORT / BTT_SECRET / BTT_SOCKET. Default: auto (socket if present, else http).
  */
 import { Btt } from "./client.js";
-import { actionCatalog } from "./actions/catalog.js";
-import * as A from "./actions/builders.js";
-import { triggerCatalog } from "./triggers/catalog.js";
 import { HttpTransport } from "./transport/http.js";
 import { UnixSocketTransport } from "./transport/unix-socket.js";
+import { triggerCatalog } from "./triggers/catalog.js";
 import type { Transport } from "./types.js";
 
 interface Parsed {
@@ -54,7 +54,12 @@ async function makeClient(flags: Record<string, string | boolean>): Promise<Btt>
   } else if (flags.port || env.BTT_PORT) {
     transport = new HttpTransport({ port: Number(flags.port ?? env.BTT_PORT), sharedSecret: secret });
   }
-  return new Btt({ transport, sharedSecret: secret, socket: {}, logger: flags.verbose ? console.error : undefined });
+  return new Btt({
+    transport,
+    sharedSecret: secret,
+    socket: {},
+    logger: flags.verbose ? console.error : undefined,
+  });
 }
 
 function kv(args: string[]): Record<string, unknown> {
@@ -121,7 +126,13 @@ async function main(): Promise<void> {
   // offline commands first
   if (cmd === "actions") {
     const [sub, ...q] = rest;
-    if (sub === "search") return out(actionCatalog.search(q.join(" ")).map((a) => `${a.id}\t${a.name}\t(${a.category})`).join("\n"));
+    if (sub === "search")
+      return out(
+        actionCatalog
+          .search(q.join(" "))
+          .map((a) => `${a.id}\t${a.name}\t(${a.category})`)
+          .join("\n"),
+      );
     if (sub === "show") {
       const key = q.join(" ");
       const a = /^-?\d+$/.test(key) ? actionCatalog.byId(Number(key)) : actionCatalog.byName(key);
@@ -140,7 +151,12 @@ async function main(): Promise<void> {
     throw new Error("usage: actions search|show|list");
   }
   if (cmd === "trigger-types") {
-    return out(triggerCatalog.search(rest.slice(1).join(" ")).map((t) => `${t.id}\t${t.name}\t(${t.category})`).join("\n"));
+    return out(
+      triggerCatalog
+        .search(rest.slice(1).join(" "))
+        .map((t) => `${t.id}\t${t.name}\t(${t.category})`)
+        .join("\n"),
+    );
   }
 
   const btt = await makeClient(flags);
@@ -181,7 +197,9 @@ async function main(): Promise<void> {
     case "shortcut":
       return out(
         await btt.triggerAction(
-          flags.app ? A.sendShortcutToApp(need(rest[0], "shortcut"), flags.app as string) : A.sendShortcut(need(rest[0], "shortcut")),
+          flags.app
+            ? A.sendShortcutToApp(need(rest[0], "shortcut"), flags.app as string)
+            : A.sendShortcut(need(rest[0], "shortcut")),
         ),
       );
     case "open":

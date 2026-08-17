@@ -19,7 +19,9 @@ export function action(type: number, extra: Record<string, unknown> = {}): Actio
 export function sequence(...actions: ActionJson[]): ActionJson {
   if (actions.length === 0) throw new Error("sequence() needs at least one action");
   const [first, ...rest] = actions as [ActionJson, ...ActionJson[]];
-  return rest.length ? { ...first, BTTAdditionalActions: [...(first.BTTAdditionalActions ?? []), ...rest] } : first;
+  return rest.length
+    ? { ...first, BTTAdditionalActions: [...(first.BTTAdditionalActions ?? []), ...rest] }
+    : first;
 }
 
 // ------------------------------------------------------------------ HUD / notifications
@@ -169,7 +171,10 @@ export function showHideApp(
   });
 }
 
-export function quitApp(bundleIdOrPath: string, o: { force?: boolean; forceAfterSeconds?: number } = {}): ActionJson {
+export function quitApp(
+  bundleIdOrPath: string,
+  o: { force?: boolean; forceAfterSeconds?: number } = {},
+): ActionJson {
   const cfg: Record<string, unknown> = {};
   if (o.force !== undefined) cfg.BTTQuitAppForceQuit = o.force;
   if (o.forceAfterSeconds !== undefined) cfg.BTTQuitAppForceQuitTimeout = o.forceAfterSeconds;
@@ -242,9 +247,12 @@ export function runShellScript(script: string, o: { shell?: string } = {}): Acti
 }
 
 export function runTerminalCommand(command: string, o: { background?: boolean } = {}): ActionJson {
-  return action(o.background ? ActionType.TERMINAL_COMMAND_BACKGROUND : ActionType.TERMINAL_COMMAND_BLOCKING, {
-    BTTTerminalCommand: command,
-  });
+  return action(
+    o.background ? ActionType.TERMINAL_COMMAND_BACKGROUND : ActionType.TERMINAL_COMMAND_BLOCKING,
+    {
+      BTTTerminalCommand: command,
+    },
+  );
 }
 
 /** Runs a shortcut from Apple's Shortcuts app. */
@@ -377,9 +385,13 @@ function menuData(menuNameOrId: string, o: FloatingMenuActionOptions): Record<st
   return {
     ...(isUuid ? { BTTMenuActionMenuID: menuNameOrId } : { BTTMenuActionMenuName: menuNameOrId }),
     ...(o.keyboardFocus !== undefined ? { BTTMenuActionActivateKeyboardFocus: o.keyboardFocus } : {}),
-    ...(o.hideOnModifierRelease !== undefined ? { BTTMenuActionHideOnModifierRelease: o.hideOnModifierRelease } : {}),
+    ...(o.hideOnModifierRelease !== undefined
+      ? { BTTMenuActionHideOnModifierRelease: o.hideOnModifierRelease }
+      : {}),
     ...(o.restorePosition !== undefined ? { BTTMenuActionRestorePosition: o.restorePosition } : {}),
-    ...(o.triggerHoveredOnHide !== undefined ? { BTTMenuActionTriggerHoveredOnHide: o.triggerHoveredOnHide } : {}),
+    ...(o.triggerHoveredOnHide !== undefined
+      ? { BTTMenuActionTriggerHoveredOnHide: o.triggerHoveredOnHide }
+      : {}),
     ...(o.closeSubmenuOnHide !== undefined ? { BTTMenuActionCloseSubmenuOnHide: o.closeSubmenuOnHide } : {}),
   };
 }

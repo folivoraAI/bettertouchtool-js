@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ActionType, actions, triggers } from "../src/index.js";
 import { actionCatalog, triggerCatalog } from "../src/catalog.js";
+import { ActionType, actions, triggers } from "../src/index.js";
 
 describe("catalogs", () => {
   it("contain well known actions and triggers", () => {
@@ -12,7 +12,10 @@ describe("catalogs", () => {
     expect(triggerCatalog.all.length).toBeGreaterThan(400);
   });
   it("builders produce documented keys", () => {
-    expect(actions.sendShortcut("cmd+s")).toEqual({ BTTPredefinedActionType: 264, BTTShortcutToSend: "55,1" });
+    expect(actions.sendShortcut("cmd+s")).toEqual({
+      BTTPredefinedActionType: 264,
+      BTTShortcutToSend: "55,1",
+    });
     expect(actions.showHUD("Hi", { duration: 2 }).BTTAdditionalActionData).toMatchObject({
       BTTActionHUDTitle: "Hi",
       BTTActionHUDDuration: 2,

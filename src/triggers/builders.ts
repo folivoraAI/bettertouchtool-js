@@ -21,7 +21,12 @@ export interface TriggerOptions {
   config?: Record<string, unknown>;
 }
 
-function base(triggerType: number, triggerClass: string, actions: ActionJson[], o: TriggerOptions): TriggerJson {
+function base(
+  triggerType: number,
+  triggerClass: string,
+  actions: ActionJson[],
+  o: TriggerOptions,
+): TriggerJson {
   return {
     BTTTriggerType: triggerType,
     BTTTriggerClass: triggerClass,
@@ -117,16 +122,28 @@ export const TrackpadClass = {
   touchBar: TriggerClass.TouchBarTrackpad,
 } as const;
 
-export function magicMouseGesture(triggerType: number, actions: ActionJson[], o: TriggerOptions = {}): TriggerJson {
+export function magicMouseGesture(
+  triggerType: number,
+  actions: ActionJson[],
+  o: TriggerOptions = {},
+): TriggerJson {
   return base(triggerType, TriggerClass.MagicMouse, actions, o);
 }
 
-export function mouseTrigger(triggerType: number, actions: ActionJson[], o: TriggerOptions = {}): TriggerJson {
+export function mouseTrigger(
+  triggerType: number,
+  actions: ActionJson[],
+  o: TriggerOptions = {},
+): TriggerJson {
   return base(triggerType, TriggerClass.Mouse, actions, o);
 }
 
 /** "Other" trigger / automation (app launched, wifi, timer, file changed, …). */
-export function otherTrigger(triggerType: number, actions: ActionJson[], o: TriggerOptions = {}): TriggerJson {
+export function otherTrigger(
+  triggerType: number,
+  actions: ActionJson[],
+  o: TriggerOptions = {},
+): TriggerJson {
   return base(triggerType, TriggerClass.OtherTriggers, actions, o);
 }
 
@@ -138,7 +155,11 @@ export interface TouchBarButtonOptions extends TriggerOptions {
   iconHeight?: number;
 }
 
-export function touchBarButton(name: string, actions: ActionJson[], o: TouchBarButtonOptions = {}): TriggerJson {
+export function touchBarButton(
+  name: string,
+  actions: ActionJson[],
+  o: TouchBarButtonOptions = {},
+): TriggerJson {
   return base(629, TriggerClass.TouchBar, actions, {
     ...o,
     extra: { BTTTouchBarButtonName: name, ...(o.extra ?? {}) },
@@ -159,7 +180,11 @@ export interface StreamDeckButtonOptions extends TriggerOptions {
   serial?: string;
 }
 
-export function streamDeckButton(name: string, actions: ActionJson[], o: StreamDeckButtonOptions = {}): TriggerJson {
+export function streamDeckButton(
+  name: string,
+  actions: ActionJson[],
+  o: StreamDeckButtonOptions = {},
+): TriggerJson {
   return base(719, TriggerClass.StreamDeck, actions, {
     ...o,
     extra: {

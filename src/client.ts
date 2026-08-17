@@ -18,7 +18,7 @@ import { HttpTransport } from "./transport/http.js";
 import { InProcessTransport } from "./transport/in-process.js";
 import { UnixSocketTransport } from "./transport/unix-socket.js";
 import type { TriggerHandle } from "./triggers/handle.js";
-import { createTriggerHandle, createWidgetHandle, type WidgetHandle } from "./triggers/handle.js";
+import { type WidgetHandle, createTriggerHandle, createWidgetHandle } from "./triggers/handle.js";
 import {
   type ActionJson,
   BttError,
@@ -163,7 +163,10 @@ export class Btt {
   }
 
   /** Runs a named trigger without waiting; `delaySeconds` makes it cancelable via cancelDelayedNamedTrigger(). */
-  async triggerNamedAsync(name: string, options: Pick<TriggerNamedOptions, "delaySeconds"> = {}): Promise<void> {
+  async triggerNamedAsync(
+    name: string,
+    options: Pick<TriggerNamedOptions, "delaySeconds"> = {},
+  ): Promise<void> {
     await this.call("trigger_named_async_without_response", {
       trigger_name: name,
       ...(options.delaySeconds !== undefined ? { delay: options.delaySeconds } : {}),
@@ -175,7 +178,10 @@ export class Btt {
   }
 
   /** Executes one action (or a sequence) described as JSON. See `actions.*` builders. */
-  async triggerAction(action: ActionJson | ActionJson[], options: { waitForReply?: boolean } = {}): Promise<string> {
+  async triggerAction(
+    action: ActionJson | ActionJson[],
+    options: { waitForReply?: boolean } = {},
+  ): Promise<string> {
     const json = Array.isArray(action) ? sequenceToJson(action) : action;
     return this.call("trigger_action", { json, wait_for_reply: options.waitForReply ?? true });
   }
@@ -218,7 +224,9 @@ export class Btt {
   async addNewTrigger(trigger: TriggerJson, options: { parentUuid?: string } = {}): Promise<TriggerHandle> {
     const raw = await this.call("add_new_trigger", {
       json: trigger,
-      ...(options.parentUuid ? { parent_uuid: options.parentUuid, trigger_parent_uuid: options.parentUuid } : {}),
+      ...(options.parentUuid
+        ? { parent_uuid: options.parentUuid, trigger_parent_uuid: options.parentUuid }
+        : {}),
     });
     const returned = raw.trim();
     const uuid = UUID_RE.test(returned) ? returned : trigger.BTTUUID;
@@ -227,13 +235,21 @@ export class Btt {
   }
 
   /** Creates the trigger with exactly this UUID, or updates it if it already exists. */
-  async upsertTrigger(uuid: string, trigger: TriggerJson, options: { parentUuid?: string } = {}): Promise<TriggerHandle> {
+  async upsertTrigger(
+    uuid: string,
+    trigger: TriggerJson,
+    options: { parentUuid?: string } = {},
+  ): Promise<TriggerHandle> {
     await this.updateTrigger(uuid, { ...trigger, BTTUUID: uuid }, options);
     return createTriggerHandle(this, uuid);
   }
 
   /** Creates or updates a trigger identified by uuid. */
-  async updateTrigger(uuid: string, patch: TriggerJson, options: { parentUuid?: string } = {}): Promise<void> {
+  async updateTrigger(
+    uuid: string,
+    patch: TriggerJson,
+    options: { parentUuid?: string } = {},
+  ): Promise<void> {
     await this.call("update_trigger", {
       uuid,
       json: patch,
@@ -341,7 +357,10 @@ export class Btt {
     return this.callJson<ClipboardManagerResult>("get_items_from_clipboard_manager", { ...query });
   }
 
-  async pasteClipboardManagerItems(uuids: string[], options: { deleteAfterPaste?: boolean } = {}): Promise<void> {
+  async pasteClipboardManagerItems(
+    uuids: string[],
+    options: { deleteAfterPaste?: boolean } = {},
+  ): Promise<void> {
     await this.call("paste_clipboard_manager_items_with_uuids", {
       uuids: uuids.join(","),
       ...(options.deleteAfterPaste !== undefined ? { deleteAfterPaste: options.deleteAfterPaste } : {}),

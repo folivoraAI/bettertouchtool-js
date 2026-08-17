@@ -21,7 +21,9 @@ export class InProcessTransport implements Transport {
   static detect(): CallBTT | undefined {
     const g = globalThis as Record<string, unknown>;
     if (typeof g.callBTT === "function") return g.callBTT as CallBTT;
-    const btt = g.BTT as { callHandler?: (c: string, p: unknown, cb: (r: unknown) => void) => void } | undefined;
+    const btt = g.BTT as
+      | { callHandler?: (c: string, p: unknown, cb: (r: unknown) => void) => void }
+      | undefined;
     if (btt && typeof btt.callHandler === "function") {
       return (command, params) => new Promise((resolve) => btt.callHandler?.(command, params, resolve));
     }

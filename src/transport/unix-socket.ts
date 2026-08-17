@@ -47,7 +47,9 @@ export class UnixSocketTransport implements Transport {
       const socket = net.createConnection(this.path);
       const timer = setTimeout(() => {
         socket.destroy();
-        reject(new BttError(`Timed out after ${this.timeoutMs}ms waiting for BTT socket reply`, command, params));
+        reject(
+          new BttError(`Timed out after ${this.timeoutMs}ms waiting for BTT socket reply`, command, params),
+        );
       }, this.timeoutMs);
       socket.on("connect", () => socket.write(line));
       socket.on("data", (d: Buffer) => chunks.push(d));

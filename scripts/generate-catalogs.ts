@@ -9,8 +9,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const docsDir =
-  process.env.BTT_DOCS_DIR ?? resolve(here, "../../BetterTouchTool/Code/AI/Resources");
+const docsDir = process.env.BTT_DOCS_DIR ?? resolve(here, "../../BetterTouchTool/Code/AI/Resources");
 
 // ---------------------------------------------------------------------------------------------
 // Actions
@@ -40,7 +39,9 @@ function toSlug(name: string): string {
     .replace(/[^A-Za-z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
-    .map((w, i) => (i === 0 ? w.charAt(0).toLowerCase() + w.slice(1) : w.charAt(0).toUpperCase() + w.slice(1)))
+    .map((w, i) =>
+      i === 0 ? w.charAt(0).toLowerCase() + w.slice(1) : w.charAt(0).toUpperCase() + w.slice(1),
+    )
     .join("")
     .replace(/^(\d)/, "_$1");
 }
@@ -60,7 +61,12 @@ function parseActions(md: string): ActionDoc[] {
   const out: ActionDoc[] = [];
   let category = "Uncategorized";
   let i = 0;
-  const skipCategories = new Set(["Important Notes", "Table of Contents", "Additional Notes", "Action Categories"]);
+  const skipCategories = new Set([
+    "Important Notes",
+    "Table of Contents",
+    "Additional Notes",
+    "Action Categories",
+  ]);
   while (i < lines.length) {
     const line = lines[i]!;
     if (line.startsWith("## ")) {
@@ -275,7 +281,9 @@ function emitTriggers(cats: TriggerCategoryDoc[]): { types: string; defs: string
   const lines: string[] = [];
   const total = cats.reduce((n, c) => n + c.triggers.length, 0);
   lines.push("// GENERATED FILE — do not edit. Run `npm run generate`.");
-  lines.push(`// Source: BetterTouchTool trigger-definitions.mdx (${cats.length} categories, ${total} trigger types)`);
+  lines.push(
+    `// Source: BetterTouchTool trigger-definitions.mdx (${cats.length} categories, ${total} trigger types)`,
+  );
   lines.push("");
   lines.push("export interface TriggerDefinition {");
   lines.push("  /** BTTTriggerType */");

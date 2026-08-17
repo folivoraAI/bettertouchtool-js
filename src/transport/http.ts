@@ -46,7 +46,10 @@ export class HttpTransport implements Transport {
     if (this.sharedSecret && !this.secretInHeader) body.shared_secret = this.sharedSecret;
     for (const k of Object.keys(body)) if (body[k] === undefined) delete body[k];
     headers["Content-Type"] = "application/json";
-    return { url: `${this.baseUrl}/${command}/`, init: { method: "POST", headers, body: JSON.stringify(body) } };
+    return {
+      url: `${this.baseUrl}/${command}/`,
+      init: { method: "POST", headers, body: JSON.stringify(body) },
+    };
   }
 
   async call(command: string, params?: CommandParams): Promise<string> {
@@ -57,7 +60,11 @@ export class HttpTransport implements Transport {
       const res = await this.fetchImpl(url, { ...init, signal: controller?.signal });
       const text = await res.text();
       if (res.status === 403) {
-        throw new BttError("BTT webserver rejected the request (403) – wrong or missing shared secret?", command, params);
+        throw new BttError(
+          "BTT webserver rejected the request (403) – wrong or missing shared secret?",
+          command,
+          params,
+        );
       }
       if (!res.ok) throw new BttError(`BTT webserver returned HTTP ${res.status}: ${text}`, command, params);
       return text;

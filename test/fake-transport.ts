@@ -9,7 +9,9 @@ export interface RecordedCall {
 export class FakeTransport implements Transport {
   readonly kind = "custom" as const;
   readonly calls: RecordedCall[] = [];
-  constructor(private readonly replies: Record<string, string | ((p: CommandParams | undefined) => string)> = {}) {}
+  constructor(
+    private readonly replies: Record<string, string | ((p: CommandParams | undefined) => string)> = {},
+  ) {}
   async call(command: string, params?: CommandParams): Promise<string> {
     this.calls.push({ command, params });
     const r = this.replies[command];

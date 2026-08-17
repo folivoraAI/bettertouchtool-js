@@ -1,5 +1,8 @@
 # bettertouchtool
 
+[![CI](https://github.com/folivora-ai/bettertouchtool-js/actions/workflows/ci.yml/badge.svg)](https://github.com/folivora-ai/bettertouchtool-js/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/bettertouchtool.svg)](https://www.npmjs.com/package/bettertouchtool)
+
 Typed JavaScript/TypeScript client for [BetterTouchTool](https://folivora.ai)'s scripting API.
 Zero dependencies, ESM + CJS, works in **Node ≥ 18**, **browsers / BTT WebViews**, and **inside BTT itself**
 (Run Real JavaScript). Successor to the unmaintained [`btt`](https://github.com/Worie/btt) package.
@@ -160,6 +163,16 @@ Connection: `--socket [path]`, `--url http://host:port`, `--port n`, `--secret s
 | `btt.state.get/set` | `btt.vars.get/set` |
 | `btt.addEventListener` (needs btt-node-server) | not needed – use BTT triggers + `btt.vars.watch`, WebSocket events planned |
 | `EActions.SHOW_HUD` | `ActionType.SHOW_HUD` |
+
+## About this project
+
+This package is published by folivora.AI (the makers of BetterTouchTool). It is **AI generated and AI
+maintained**: the code, tests, docs and the catalogs were written with Claude (Anthropic) and are kept in
+sync with new BetterTouchTool versions the same way – the action/trigger catalogs are regenerated from BTT's
+own reference documentation. Bug reports and pull requests are welcome; expect fixes to be produced with AI
+assistance and reviewed by a human before release. It succeeds the community package
+[`btt`](https://github.com/Worie/btt) by Wojciech Połowniak, which inspired the overall shape (typed action
+builders, chaining, trigger/widget objects) but shares no code with it.
 
 ## Development
 

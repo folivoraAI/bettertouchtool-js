@@ -3,20 +3,29 @@ import { HttpTransport, InProcessTransport, UnixSocketTransport, normalizeParams
 
 describe("normalizeParams", () => {
   it("stringifies objects, keeps scalars, drops nullish", () => {
-    expect(normalizeParams({ a: 1, b: true, c: "x", d: { e: 1 }, f: undefined, g: null, h: [1, 2] })).toEqual({
-      a: "1",
-      b: "true",
-      c: "x",
-      d: '{"e":1}',
-      h: "[1,2]",
-    });
+    expect(normalizeParams({ a: 1, b: true, c: "x", d: { e: 1 }, f: undefined, g: null, h: [1, 2] })).toEqual(
+      {
+        a: "1",
+        b: "true",
+        c: "x",
+        d: '{"e":1}',
+        h: "[1,2]",
+      },
+    );
   });
 });
 
 describe("HttpTransport", () => {
   it("builds urls with shared secret and encoded json", () => {
-    const t = new HttpTransport({ port: 1234, sharedSecret: "s3cret", fetch: (async () => new Response("")) as any });
-    const url = t.buildUrl("trigger_action", { json: { BTTPredefinedActionType: 254 }, wait_for_reply: false });
+    const t = new HttpTransport({
+      port: 1234,
+      sharedSecret: "s3cret",
+      fetch: (async () => new Response("")) as any,
+    });
+    const url = t.buildUrl("trigger_action", {
+      json: { BTTPredefinedActionType: 254 },
+      wait_for_reply: false,
+    });
     expect(url).toBe(
       "http://127.0.0.1:1234/trigger_action/?json=%7B%22BTTPredefinedActionType%22%3A254%7D&wait_for_reply=false&shared_secret=s3cret",
     );
@@ -31,14 +40,22 @@ describe("HttpTransport", () => {
     const t = new HttpTransport({ url: "http://localhost:9/", fetch: fetchImpl });
     expect(await t.call("trigger_named", { trigger_name: "a b" })).toBe("hello");
     expect(seen[0]).toBe("http://localhost:9/trigger_named/?trigger_name=a%20b");
-    const t403 = new HttpTransport({ url: "http://x", fetch: (async () => new Response("", { status: 403 })) as any });
+    const t403 = new HttpTransport({
+      url: "http://x",
+      fetch: (async () => new Response("", { status: 403 })) as any,
+    });
     await expect(t403.call("x")).rejects.toThrow(/shared secret/);
   });
 });
 
 describe("HttpTransport POST", () => {
   it("switches to POST for large payloads and can send the secret as header", () => {
-    const t = new HttpTransport({ port: 1, sharedSecret: "s", secretInHeader: true, fetch: (async () => new Response("")) as any });
+    const t = new HttpTransport({
+      port: 1,
+      sharedSecret: "s",
+      secretInHeader: true,
+      fetch: (async () => new Response("")) as any,
+    });
     const small = t.buildRequest("trigger_named", { trigger_name: "x" });
     expect(small.init.method).toBe("GET");
     expect((small.init.headers as Record<string, string>)["X-BTT-Shared-Secret"]).toBe("s");
@@ -47,7 +64,12 @@ describe("HttpTransport POST", () => {
     expect(big.init.method).toBe("POST");
     expect(big.url).toBe("http://127.0.0.1:1/add_new_trigger/");
     expect(JSON.parse(big.init.body as string).json.BTTNotes.length).toBe(7000);
-    const forced = new HttpTransport({ port: 1, sharedSecret: "s", method: "post", fetch: (async () => new Response("")) as any });
+    const forced = new HttpTransport({
+      port: 1,
+      sharedSecret: "s",
+      method: "post",
+      fetch: (async () => new Response("")) as any,
+    });
     const req = forced.buildRequest("get_string_variable", { variable_name: "v" });
     expect(req.init.method).toBe("POST");
     expect(JSON.parse(req.init.body as string)).toEqual({ variable_name: "v", shared_secret: "s" });

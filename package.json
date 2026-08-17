@@ -1,7 +1,7 @@
 {
   "name": "bettertouchtool",
   "version": "1.0.0-alpha.1",
-  "description": "Typed JavaScript/TypeScript client for BetterTouchTool's scripting API (webserver, unix socket, or in-process). Successor to the unmaintained `btt` package.",
+  "description": "Official, typed JavaScript/TypeScript client for BetterTouchTool's scripting API (webserver, unix socket, or in-process). AI generated & maintained by folivora.AI. Successor to the unmaintained `btt` package.",
   "license": "MIT",
   "author": "folivora.AI GmbH",
   "type": "module",
@@ -30,11 +30,7 @@
   "bin": {
     "btt": "./dist/cli.js"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
   "engines": {
     "node": ">=18"
@@ -63,8 +59,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/folivora-ai/bettertouchtool-js"
+    "url": "git+https://github.com/folivora-ai/bettertouchtool-js.git"
   },
+  "homepage": "https://github.com/folivora-ai/bettertouchtool-js#readme",
+  "bugs": "https://github.com/folivora-ai/bettertouchtool-js/issues",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^20.19.43",
