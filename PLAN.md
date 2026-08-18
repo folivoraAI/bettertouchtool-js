@@ -162,6 +162,14 @@ Root causes found live:
    (`"/bin/bash:::-c:::-:::"`), a bare `"/bin/bash"` silently does nothing; Run Real JavaScript needs
    `BTTScriptFunctionToCall` for a return value. Docs + builders (`runShellScript`, `runJavaScript`) fixed.
 
+### B15. Nested awaited action sequences swallowed the outer reply   ✅ fixed
+`BTTShortcutter.alreadyTriggeredBlock` was ONE shared BOOL. A sequence B started while sequence A was still
+waiting for an async action (Real JS calling `trigger_named`/`trigger_action` with wait_for_reply, or any
+awaited chain) set the flag → A's reply was suppressed forever (external `trigger_named` timed out, and
+in-BTT chains that awaited other triggers hung). Replaced by a per-reply-block mark (associated object on
+the heap-copied reply block, `btt_hasReplied:/btt_markReplied:/btt_resetReplied:`, entry points copy the
+block). Verified live: nested awaited trigger_named/trigger_action return in ~15-70 ms.
+
 ### B7. Unix socket server: wrong defaults key
 `BTTUnixSocketServer.m:147` checks `BTTSocketServer` but the setting is `BTTSocketServerEnabled` —
 the guard is dead (harmless today because the server is only started when enabled, but should be fixed).
