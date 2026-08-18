@@ -4,6 +4,16 @@ import { normalizeParams, toQueryString } from "./params.js";
 export const DEFAULT_SOCKET_PATH = "/tmp/com.hegenberg.BetterTouchTool.sock";
 
 /**
+ * Loads a Node built-in without letting bundlers see a static specifier: this file is part of the
+ * browser bundle too (the code path is only reached in Node), and webpack/vite would otherwise fail on
+ * an unresolvable "node:net". The indirection turns it into an opaque dynamic import.
+ */
+async function nodeBuiltin<T = any>(name: string): Promise<T> {
+  const spec = `node:${name}`;
+  return (await import(/* @vite-ignore */ /* webpackIgnore: true */ spec)) as T;
+}
+
+/**
  * Talks to BetterTouchTool's unix socket server (Settings → Scripting → "Enable Socket Server").
  * Local only, no webserver required. Node.js only.
  *
@@ -26,7 +36,7 @@ export class UnixSocketTransport implements Transport {
   static async isAvailable(path: string = DEFAULT_SOCKET_PATH): Promise<boolean> {
     if (typeof process === "undefined" || !process.versions?.node) return false;
     try {
-      const fs = await import("node:fs");
+      const fs = await nodeBuiltin<typeof import("node:fs")>("fs");
       return fs.existsSync(path);
     } catch {
       return false;
@@ -40,7 +50,7 @@ export class UnixSocketTransport implements Transport {
   }
 
   async call(command: string, params?: CommandParams): Promise<string> {
-    const net = await import("node:net");
+    const net = await nodeBuiltin<typeof import("node:net")>("net");
     const line = this.buildRequestLine(command, params);
     return new Promise<string>((resolve, reject) => {
       const chunks: Buffer[] = [];
