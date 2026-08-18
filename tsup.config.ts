@@ -13,6 +13,19 @@ export default defineConfig([
     treeshake: true,
   },
   {
+    // single-file CommonJS bundle shipped inside BetterTouchTool.app (see scripts/sync-to-btt.mjs)
+    entry: { "bettertouchtool.btt": "src/btt-module.ts" },
+    format: ["cjs"],
+    outExtension: () => ({ js: ".cjs" }),
+    sourcemap: false,
+    dts: false,
+    target: "es2020",
+    platform: "browser",
+    noExternal: [/.*/],
+    treeshake: true,
+    minify: false,
+  },
+  {
     entry: { cli: "src/cli.ts" },
     format: ["esm"],
     sourcemap: false,

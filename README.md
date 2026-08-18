@@ -307,20 +307,20 @@ Options: `description`, `enabled`, `conditions` (NSPredicate string), `requiredM
 
 ## Using it *inside* BTT (Run Real JavaScript)
 
-BTT's JS engine has no `require`/`import`. Bundle your script (this package + your code) into one file and
-load it – the client detects `callBTT` and needs no configuration:
-
-```bash
-npx esbuild my-script.ts --bundle --format=iife --platform=browser --outfile=~/Library/Application\ Support/BetterTouchTool/my-script.js
-```
+BetterTouchTool ≥ 6.735 ships a copy of this library and provides `require()` in its JavaScript engine:
 
 ```js
-// Run Real JavaScript action:
-async function run() {
-  eval(readFile("~/Library/Application Support/BetterTouchTool/my-script.js"));
-  return "done";
+async function main() {
+  const { Btt, actions } = require("bettertouchtool");
+  const btt = Btt.inProcess();
+  await btt.triggerAction(actions.showHUD("Hello from inside BTT"));
+  return await btt.getStringVariable("BTTActiveAppBundleIdentifier");
 }
 ```
+
+`require()` also loads your own CommonJS bundles from `~/Library/Application Support/BetterTouchTool/JavaScriptModules/<name>.js`
+or from a file path (`npx esbuild my.js --bundle --format=cjs --platform=browser --outfile=…`). On older BTT
+versions bundle as IIFE and use `eval(readFile("/path/to/bundle.js"))`.
 
 ## CLI
 

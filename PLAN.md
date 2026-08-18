@@ -199,7 +199,7 @@ params from the same catalog the npm package uses (single source of truth), and 
 | B10 trigger_id coercion | ✅ done |
 | B9 docs (`webserver.mdx`) | ✅ updated |
 | B6 WebSocket event stream + A9 client events | ⏳ next |
-| B8 `import_script()` in the JS runner | ⏳ next |
+| B8 `require()` in the JS runner + bundled `bettertouchtool.cjs` (Code/JavaScriptCoreRunner/Modules, synced via `npm run sync:btt`) | ✅ done |
 | B11 / B12 | ⏳ optional |
 
 All BTT-side changes verified live against build 6.735 (2026081704) on 2026-08-17: socket, HTTP GET, HTTP POST

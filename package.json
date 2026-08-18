@@ -50,7 +50,8 @@
     "format": "biome format --write .",
     "generate": "node --import tsx scripts/generate-catalogs.ts",
     "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "check": "npm run lint && npm run typecheck && npm test"
+    "check": "npm run lint && npm run typecheck && npm test",
+    "sync:btt": "node scripts/sync-to-btt.mjs"
   },
   "keywords": [
     "bettertouchtool",
