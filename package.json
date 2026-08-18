@@ -51,7 +51,8 @@
     "generate": "node --import tsx scripts/generate-catalogs.ts",
     "prepublishOnly": "npm run lint && npm run typecheck && npm run test && npm run build",
     "check": "npm run lint && npm run typecheck && npm test",
-    "sync:btt": "node scripts/sync-to-btt.mjs"
+    "sync:btt": "node scripts/sync-to-btt.mjs",
+    "postversion": "npm run build && npm run sync:btt && echo 'bundled copy synced into ../BetterTouchTool - commit it there with the next BTT version'"
   },
   "keywords": [
     "bettertouchtool",
