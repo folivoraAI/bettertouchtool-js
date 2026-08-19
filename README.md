@@ -114,6 +114,24 @@ curl -X POST http://127.0.0.1:64472/trigger_action/ -H 'X-BTT-Shared-Secret: my-
      -d '{"json":{"BTTPredefinedActionType":254,"BTTAdditionalActionData":{"BTTActionHUDTitle":"Hello","BTTActionHUDDuration":2}}}'
 ```
 
+### Show a HUD from inside BTT (Run Real JavaScript)
+
+Nothing to install: BetterTouchTool ≥ 6.735 ships this library and offers `require()`. Paste into a
+*Run Real JavaScript* action (or any script widget):
+
+```js
+async function main() {
+  const { Btt, actions } = require("bettertouchtool");
+  const btt = Btt.inProcess();               // talks to BTT directly, no socket / webserver needed
+
+  const app = await btt.getStringVariable("BTTActiveAppBundleIdentifier");
+  await btt.triggerAction(
+    actions.showHUD("Hello from inside BTT 🖐", { detail: `frontmost app: ${app}`, duration: 2 }),
+  );
+  return app;                                // becomes the action's result
+}
+```
+
 ### Read and write variables
 
 ```js
