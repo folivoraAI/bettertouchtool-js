@@ -336,9 +336,11 @@ async function main() {
 }
 ```
 
-`require()` also loads your own CommonJS bundles from `~/Library/Application Support/BetterTouchTool/JavaScriptModules/<name>.js`
-or from a file path (`npx esbuild my.js --bundle --format=cjs --platform=browser --outfile=…`). On older BTT
-versions bundle as IIFE and use `eval(readFile("/path/to/bundle.js"))`.
+`require()` also loads your own CommonJS bundles by name from `~/Library/Application Support/BetterTouchTool/JavaScriptModules/`
+(`<name>.js`, `<name>.cjs`, package folders with `package.json`/`index.js`, nested names) or from a file path
+(`npx esbuild my.js --bundle --format=cjs --platform=browser --outfile=…`). Edited module files are reloaded
+automatically (mtime check); `require.reload("name")` forces it. On older BTT versions bundle as IIFE and use
+`eval(readFile("/path/to/bundle.js"))`.
 
 ## CLI
 
